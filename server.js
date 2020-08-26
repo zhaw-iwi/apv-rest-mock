@@ -1,49 +1,130 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const fs = require('fs');
+const path = require('path');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-let db = require("./data/db.json")
+const app = express();
+app.use(bodyParser.json());
 
-for (let table of db) {
+const port = 3000;
 
-    // GET /api/<table_name>
-    app.get('/api/' + table.table_name, (req, res) => {
-        res.send(table.records)
-    })
+const data_path = path.join(__dirname, 'data');
 
-    // GET /api/<table_name>/:id
-    app.get('/api/' + table.table_name + '/:id', (req, res) => {
-        let id = req.params.id;
-        let record = table.records.find(record => record.id == id);
-        if (record) {
-            res.send(record)
-        }
-        else {
-            res.sendStatus(404)
-        }
-    })
+var db = [];
 
-    // POST /api/<table_name>
-    // TODO
-}
-
-app.get('/api', (req, res) => {
-    let doc = `
-    <body>    
-        <h1>Welcome to the simple REST mock server</h1>
-        <p>This API provides the following endpoints:</p>
-        <ul>`
-    
-    for (let table of db) {
-        doc += '<li>/api/' + table.table_name + " - " + table.description + '</li>';
+fs.readdir(data_path, (err, files) => {
+    if (err) {
+        console.log("could not open directory");
     }
+    else {
+        for (let file of files) {
+            if (path.extname(file) === '.json') {
+                let data = require(path.join(data_path, file));
+                let endpointName = path.basename(file, '.json')
 
-    doc += `
-        </ul>
-    </body>`
-
-    res.send(doc)
+                db.push({
+                    "name": endpointName,
+                    "records": data
+                })
+            }
+        }
+        createEndpoints();
+        createRootEndpoint();
+    }
 })
+
+
+function createEndpoints() {
+
+    for (let table of db) {
+        let tableName = table.name;
+        let records = table.records;
+
+        // GET /api/<tableName>
+        app.get('/api/' + tableName, (req, res) => {
+            res.send(records)
+        })
+
+        // GET /api/<table_name>/:id
+        app.get('/api/' + tableName + '/:id', (req, res) => {
+            let id = req.params.id;
+            let record = records.find(record => record.id == id);
+            if (record) {
+                res.send(record)
+            }
+            else {
+                res.sendStatus(404)
+            }
+        })
+
+        // DELETE /api/<table_name>/:id
+        app.delete('/api/' + tableName + '/:id', (req, res) => {
+            let id = req.params.id;
+            let index = records.findIndex(record => record.id == id);
+            console.log(index)
+            if (index >= 0 ) {
+                records.splice(index, 1);
+                res.send("Item with ID " + id + ' has been successfully deleted.')
+            }
+            else { 
+                res.sendStatus(404)
+            }
+        })
+
+        // POST /api/<tableName>
+        app.post('/api/' + tableName, (req, res) => {
+            
+            // find the first free id
+            let found = false;
+            let id = 1;
+            while (!found) {
+                let index = records.findIndex(record => record.id == id);
+                console.log(index) 
+                if ( index < 0) {
+                    found = true;
+                    console.log("free id "+id);
+                }
+                else {
+                    id++;
+                }
+            }
+            
+            let record = req.body;
+            record.id = id;
+            table.records.push(record);
+            table.records.sort((a,b) => a.id - b.id);
+            res.send(record);
+        })
+    }
+} 
+
+function createRootEndpoint() {
+    app.get('/api', (req, res) => {
+        let doc = `
+            <body>    
+                <h1>Welcome to the simple REST mock server</h1>
+                <p>This API provides the following endpoints:</p>`
+
+        for (let table of db) {
+            let name = table.name;
+            doc += '<h2>' + name + '</h2>';
+
+            doc += '<ul>'
+            doc += '<li>GET /api/' + name + ' - Get a list of all items in the collection ' + name + '</li>';
+            doc += '<li>GET /api/' + name + '/{id} - Get a an item in the collection ' + name + ' by ID</li>';
+            doc += '<li>DELETE /api/' + name + '/{id} - Delete a an item in the collection ' + name + ' by ID</li>';
+            doc += '<li>POST /api/' + name + ' - Create a new item in the collection ' + name
+            doc += '<p>Example:</p>';
+            doc += '<pre>' + JSON.stringify(table.records[0], null, 2) + '</pre>';
+            doc += '</li></ul>'
+        }
+
+        doc += '</body>'
+
+        res.send(doc)
+    })
+
+}
 
 app.get('/', (req, res) => {
     res.redirect('/api')
