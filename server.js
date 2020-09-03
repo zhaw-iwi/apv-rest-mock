@@ -1,10 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors());
 
 const port = 3000;
 
@@ -61,7 +63,6 @@ function createEndpoints() {
         app.delete('/api/' + tableName + '/:id', (req, res) => {
             let id = req.params.id;
             let index = records.findIndex(record => record.id == id);
-            console.log(index)
             if (index >= 0 ) {
                 records.splice(index, 1);
                 res.send("Item with ID " + id + ' has been successfully deleted.')
@@ -79,10 +80,8 @@ function createEndpoints() {
             let id = 1;
             while (!found) {
                 let index = records.findIndex(record => record.id == id);
-                console.log(index) 
                 if ( index < 0) {
                     found = true;
-                    console.log("free id "+id);
                 }
                 else {
                     id++;
