@@ -5,10 +5,12 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
+app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(cors());
 
-const port = 3000;
+
+const port = process.env.PORT || 3000;
 
 const data_path = path.join(__dirname, 'data');
 
@@ -124,11 +126,6 @@ function createRootEndpoint() {
     })
 
 }
-
-app.get('/', (req, res) => {
-    res.redirect('/api')
-})
-
 
 app.listen(port, () => {
     console.log(`Mock server listening at http://localhost:${port}`)

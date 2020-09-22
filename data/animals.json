@@ -1,0 +1,52 @@
+[
+    {
+        "id": 1,
+        "name": "Galapagos tortoise",
+        "scientific_name": "Geochelone elephantopus"
+    },
+    {
+        "id": 2,
+        "name": "Bobcat",
+        "scientific_name": "Felis rufus"
+    },
+    {
+        "id": 3,
+        "name": "Huron",
+        "scientific_name": "Galictis vittata"
+    },
+    {
+        "id": 4,
+        "name": "Pelican, australian",
+        "scientific_name": "Pelecanus conspicillatus"
+    },
+    {
+        "id": 5,
+        "name": "Cormorant, flightless",
+        "scientific_name": "Nannopterum harrisi"
+    },
+    {
+        "id": 6,
+        "name": "Sambar",
+        "scientific_name": "Cervus unicolor"
+    },
+    {
+        "id": 7,
+        "name": "Red-winged hawk (unidentified)",
+        "scientific_name": "unavailable"
+    },
+    {
+        "id": 8,
+        "name": "Egret, great",
+        "scientific_name": "Casmerodius albus"
+    },
+    {
+        "id": 9,
+        "name": "Rhinoceros, square-lipped",
+        "scientific_name": "Ceratotherium simum"
+    },
+    {
+        "id": 10,
+        "name": "Indian jackal",
+        "scientific_name": "Canis aureus"
+    }
+]
